@@ -157,11 +157,12 @@ find_prob_pred_geq <- function(model,preddf,targetval){
 ## Probability for sum of 11 districts changing election outcome, model without 11 districts
 
 ```{r}
-find_prob_pred_geq(model11,preddf11,hoferneeds11) %>% cat()
+myprob <- find_prob_pred_geq(model11,preddf11,hoferneeds11)  
+myprob %>% cat()
 ```
 
 ```{r}
-printfixed <- function(x)sprintf("%.0d",x)
+printfixed <- function(x)sprintf("%.0f",x)
 ```
 
 We can check that the the proabbility really gives the ratget value as limit
@@ -171,8 +172,9 @@ Hofer has `r printfixed(hofer11m)` votes in the contaminated districts.
 He needs `r printfixed(shiftneeded)` more mail votes there, making for a total of
 `r printfixed(hoferneeds11)` mail votes in the contaminated districts.
 
+Let us check the corresponding prediction confidence interval with probability `r sprintf("%.12f",1-2*myprob)`
+
 ```{r}
-myprob <- find_prob_pred_geq(model11,preddf11,hoferneeds11) 
 predict(model11,preddf11,interval="prediction",weights=~1/Tot_m, level=1-2*myprob)
 ```
 

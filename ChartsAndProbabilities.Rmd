@@ -1,0 +1,239 @@
+---
+title: "Austrian presidential elections manipulated? &nbsp; Definitely not: Charts and Probabilities"
+author: "Erich Neuwirth"
+date: "August 27, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment="")
+```
+
+## Load packages
+
+```{r}
+library(stringr)
+library(ggplot2)
+library(dplyr)
+library(intubate)
+library(magrittr)
+```
+## Get data and compute values needed
+
+```{r}
+load(file=file.path("Rdata","workdata.RData"))
+```
+
+```{r}
+workdata %<>%
+  mutate(Hofer_ant_u=Hofer_u/Tot_u,
+         Hofer_ant_m=Hofer_m/Tot_m) 
+
+```
+
+
+```{r}
+workdata %>% select(Hofer_u,Hofer_m,Tot_u,Tot_m) %>%
+  colSums() -> toterg
+shiftneeded <- ceiling((toterg[3]+toterg[4])/2-(toterg[1]+toterg[2]))
+
+```
+
+```{r}
+workdata %>%
+  select(incrim11,Tot_m,Hofer_m,Tot_u,Hofer_u) %>%
+   group_by(incrim11) %>%
+  summarise_each("sum") ->
+  sums11
+tot11m <- sums11[[1,2]]
+hofer11m <- sums11[[1,3]]
+hofer11u <- sums11[[1,5]]
+hoferneeds11 <- (hofer11m + shiftneeded)
+```
+
+```{r}
+workdata %>%
+  select(incrim14,Tot_m,Hofer_m,Tot_u,Hofer_u) %>%
+   group_by(incrim14) %>%
+  summarise_each("sum") ->
+  sums14
+tot14m <- sums14[[1,2]]
+hofer14m <- sums14[[1,3]]
+hofer14u <- sums14[[1,5]]
+hoferneeds14 <- (hofer14m + shiftneeded)
+```
+
+## Charts
+
+### Without modifications
+
+```{r}
+mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
+workdata %>%
+  mutate(incrim=ifelse(incrim14=="nicht beanst.","clean","dubious")) %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","contaminated",incrim)) %>%
+  mutate(incrim=factor(incrim,levels=c("clean","dubious","contaminated"))) %>%
+  ggplot(aes(x=Hofer_ant_u,y=Hofer_ant_m,size=Tot_m,color=incrim)) +
+  geom_point() +
+  geom_abline(slope=1,intercept=0,linetype="dotted") +
+  scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
+  scale_color_manual("court\nclassification",values=c("limegreen","darkorange","red")) +
+  scale_x_continuous("Hofer ballot votes",labels=scales::percent,
+                     limits=c(0,mymax)) +
+  scale_y_continuous("Hofer mail votes",
+                     labels=scales::percent,limits=c(0,mymax)) ->
+  pic1
+pic1
+```
+
+```{r}
+png("pic1.png",width=700,height=600)
+pic1
+dev.off()
+system("open pic1.png")
+```
+
+
+### Modifications in 11 districts
+
+
+```{r}
+mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
+
+workdata %>%
+  mutate(incrim=ifelse(incrim14=="nicht beanst.","clean","dubious")) %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","contaminated",incrim)) %>%
+  mutate(incrim=factor(incrim,levels=c("clean","dubious","contaminated"))) %>%
+  mutate(manipval=ifelse(incrim11=="beanst.",shiftneeded*Tot_m/tot11m,0)) %>%
+  mutate(hh=(Hofer_m+manipval)/Tot_m) %>%
+  ggplot(aes(x=Hofer_ant_u,y=hh,
+             size=Tot_m,color=incrim)) +
+  geom_point() +
+  geom_abline(slope=1,intercept=0,linetype="dotted") +
+  scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,4),guide=FALSE) +
+#  scale_color_discrete("VfGH") +
+  scale_color_manual("court\nclassification",values=c("limegreen","darkorange","red")) +
+  scale_x_continuous("Hofer ballot votes",labels=scales::percent,
+                     limits=c(0,mymax)) +
+  scale_y_continuous("Hofer mail votes",
+                     labels=scales::percent,limits=c(0,mymax)) ->
+  pic11
+pic11
+```
+
+
+
+```{r}
+png("pic11.png",width=700,height=600)
+pic11
+dev.off()
+system("open pic11.png")
+```
+
+
+### Modifications in 14 districts
+
+
+```{r}
+mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
+
+workdata %>%
+  mutate(incrim=ifelse(incrim14=="nicht beanst.","clean","dubious")) %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","contaminated",incrim)) %>%
+  mutate(incrim=factor(incrim,levels=c("clean","dubious","contaminated"))) %>%
+  mutate(manipval=ifelse(incrim14=="beanst.",shiftneeded*Tot_m/tot14m,0)) %>%
+  mutate(hh=(Hofer_m+manipval)/Tot_m) %>%
+  ggplot(aes(x=Hofer_ant_u,y=hh,
+             size=Tot_m,color=incrim)) +
+  geom_point() +
+  geom_abline(slope=1,intercept=0,linetype="dotted") +
+  scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,4),guide=FALSE) +
+#  scale_color_discrete("VfGH") +
+  scale_color_manual("court\nclassification",values=c("limegreen","darkorange","red")) +
+  scale_x_continuous("Hofer ballot votes",labels=scales::percent,
+                     limits=c(0,mymax)) +
+  scale_y_continuous("Hofer mail votes",
+                     labels=scales::percent,limits=c(0,mymax)) ->
+  pic14
+pic14
+```
+
+
+
+```{r}
+png("pic14.png",width=700,height=600)
+pic14
+dev.off()
+system("open pic14.png")
+```
+
+## Computing probabilities for changing election outcome in different scenarios
+
+### Linear model with 11 districts removed
+
+```{r}
+workdata %>% filter(!(incrim11 == "beanst.")) %>%
+  ntbt_lm(Hofer_m ~ Hofer_u - 1,weights=1/Tot_m) ->
+  model11
+```
+
+### Linear model with 11 districts removed
+
+```{r}
+workdata %>% filter(!(incrim14 == "beanst.")) %>%
+  ntbt_lm(Hofer_m ~ Hofer_u - 1,weights=1/Tot_m) ->
+  model14
+```
+
+### Data frame for prediction sum of 11 districts
+
+```{r}
+preddf11 <- data.frame(Hofer_u=hofer11u,Tot_m=tot11m)  
+```
+
+### Data frame for prediction sum of 13 districts
+
+```{r}
+preddf14 <- data.frame(Hofer_u=hofer14u,Tot_m=tot14m)  
+```
+
+### Auxiliary function
+
+`predict.lm` computes prediction intervals for given confidence levels.
+Our problem is the other way round, we compute the probability od
+the prediction exceeding a given target value.
+
+To do this, we compute a prediction interval for a given confidence level,
+extract the value by which the t-distribution for the prediction has been rescaled,
+and use this scale value to compute the probability we are looking for. 
+
+
+```{r}
+find_prob_pred_geq <- function(model,preddf,targetval){
+  pred <- predict.lm(model,preddf,interval="prediction",weights=~1/Tot_m,level=0.95)
+  predscale <- (pred[1]-pred[2])/qt(0.975,df.residual(model))
+  res <- 1-pt((targetval-pred[1])/predscale,df.residual(model))
+  names(res) <- NULL
+  res
+}
+```
+
+
+## Probability for sum of 11 districts changing election outcome, model without 11 districts
+
+```{r}
+find_prob_pred_geq(model11,preddf11,hoferneeds11) %>% cat()
+```
+
+
+## Probability for sum of 11 districts changing election outcome, model without 14 districts
+
+```{r}
+find_prob_pred_geq(model14,preddf11,hoferneeds11) %>% cat()
+```
+
+## Probability for sum of 14 districts changing election outcome, model without 14 districts
+
+```{r}
+find_prob_pred_geq(model14,preddf14,hoferneeds14) %>% cat()
+```

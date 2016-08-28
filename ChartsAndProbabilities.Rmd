@@ -177,7 +177,7 @@ workdata %>% filter(!(incrim11 == "beanst.")) %>%
   model11
 ```
 
-### Linear model with 11 districts removed
+### Linear model with 14 districts removed
 
 ```{r}
 workdata %>% filter(!(incrim14 == "beanst.")) %>%
@@ -191,7 +191,7 @@ workdata %>% filter(!(incrim14 == "beanst.")) %>%
 preddf11 <- data.frame(Hofer_u=hofer11u,Tot_m=tot11m)  
 ```
 
-### Data frame for prediction sum of 13 districts
+### Data frame for prediction sum of 14 districts
 
 ```{r}
 preddf14 <- data.frame(Hofer_u=hofer14u,Tot_m=tot14m)  

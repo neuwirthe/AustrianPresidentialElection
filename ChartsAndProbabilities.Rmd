@@ -97,7 +97,6 @@ workdata %>%
   geom_point() +
   geom_abline(slope=1,intercept=0,linetype="dotted") +
   scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,4),guide=FALSE) +
-#  scale_color_discrete("VfGH") +
   scale_color_manual("court\nclassification",values=c("limegreen","red")) +
   scale_x_continuous("Hofer ballot votes",labels=scales::percent,
                      limits=c(0,mymax)) +
@@ -159,5 +158,21 @@ find_prob_pred_geq <- function(model,preddf,targetval){
 
 ```{r}
 find_prob_pred_geq(model11,preddf11,hoferneeds11) %>% cat()
+```
+
+```{r}
+printfixed <- function(x)sprintf("%.0d",x)
+```
+
+We can check that the the proabbility really gives the ratget value as limit
+of the confidence interval.
+
+Hofer has `r printfixed(hofer11m)` votes in the contaminated districts.
+He needs `r printfixed(shiftneeded)` more mail votes there, making for a total of
+`r printfixed(hoferneeds11)` mail votes in the contaminated districts.
+
+```{r}
+myprob <- find_prob_pred_geq(model11,preddf11,hoferneeds11) 
+predict(model11,preddf11,interval="prediction",weights=~1/Tot_m, level=1-2*myprob)
 ```
 

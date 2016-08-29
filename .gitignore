@@ -2,6 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-.png
+*.png
 README.html
 Test.*
+TeX/*
+*.pdf

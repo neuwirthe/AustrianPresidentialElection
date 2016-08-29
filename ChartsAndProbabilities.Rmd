@@ -36,7 +36,7 @@ workdata %<>%
 workdata %>% select(Hofer_u,Hofer_m,Tot_u,Tot_m) %>%
   colSums() -> toterg
 shiftneeded <- ceiling((toterg[3]+toterg[4])/2-(toterg[1]+toterg[2]))
-
+hofer_behind <- (toterg[3]+toterg[4]) - 2 * (toterg[1]+toterg[2])
 ```
 
 ```{r separate_results}
@@ -237,8 +237,8 @@ printfixed <- function(x)sprintf("%.0f",x)
 We can check that the the probability really gives the target value as limit
 of the confidence interval.
 
-Hofer has `r printfixed(hofer11m)` votes in the contaminated districts.
-He needs `r printfixed(shiftneeded)` more mail votes there, making for a total of
+Hofer lost by `r hofer_behind`, and he has `r printfixed(hofer11m)` votes in the contaminated districts.
+So he needs `r printfixed(shiftneeded)` more mail votes there, making for a total of
 `r printfixed(hoferneeds11)` mail votes in the contaminated districts.
 
 Let us check the corresponding prediction confidence interval with probability `r sprintf("%.12f",1-2*myprob)`

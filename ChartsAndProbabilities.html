@@ -148,7 +148,8 @@ library(magrittr)</code></pre>
          Hofer_ant_m=Hofer_m/Tot_m) </code></pre>
 <pre class="r"><code>workdata %&gt;% select(Hofer_u,Hofer_m,Tot_u,Tot_m) %&gt;%
   colSums() -&gt; toterg
-shiftneeded &lt;- ceiling((toterg[3]+toterg[4])/2-(toterg[1]+toterg[2]))</code></pre>
+shiftneeded &lt;- ceiling((toterg[3]+toterg[4])/2-(toterg[1]+toterg[2]))
+hofer_behind &lt;- (toterg[3]+toterg[4]) - 2 * (toterg[1]+toterg[2])</code></pre>
 <pre class="r"><code>workdata %&gt;%
   select(incrim11,Tot_m,Hofer_m,Tot_u,Hofer_u) %&gt;%
    group_by(incrim11) %&gt;%
@@ -306,7 +307,7 @@ myprob %&gt;% cat()</code></pre>
 <pre><code>1.322065e-10</code></pre>
 <pre class="r"><code>printfixed &lt;- function(x)sprintf(&quot;%.0f&quot;,x)</code></pre>
 <p>We can check that the the probability really gives the target value as limit of the confidence interval.</p>
-<p>Hofer has 34479 votes in the contaminated districts. He needs 15432 more mail votes there, making for a total of 49911 mail votes in the contaminated districts.</p>
+<p>Hofer lost by 3.086310^{4}, and he has 34479 votes in the contaminated districts. So he needs 15432 more mail votes there, making for a total of 49911 mail votes in the contaminated districts.</p>
 <p>Let us check the corresponding prediction confidence interval with probability 0.999999999736</p>
 <pre class="r"><code>predict(model11,preddf11,interval=&quot;prediction&quot;,weights=~1/Tot_m, level=1-2*myprob)</code></pre>
 <pre><code>       fit      lwr   upr

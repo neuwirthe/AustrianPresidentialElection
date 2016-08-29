@@ -48,6 +48,7 @@ workdata %>%
 tot11m <- sums11[[1,2]]
 hofer11m <- sums11[[1,3]]
 hofer11u <- sums11[[1,5]]
+tot11u <- sums11[[1,4]]
 hoferneeds11 <- (hofer11m + shiftneeded)
 ```
 
@@ -59,26 +60,52 @@ hoferneeds11 <- (hofer11m + shiftneeded)
 ```{r real_chart}
 mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
 workdata %>%
-  mutate(incrim=ifelse(incrim11=="beanst.","contaminated","clean")) %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","contaminated","uncontaminated")) %>%
   ggplot(aes(x=Hofer_ant_u,y=Hofer_ant_m,size=Tot_m,color=incrim)) +
   geom_point() +
   geom_abline(slope=1,intercept=0,linetype="dotted") +
-  scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
-  scale_color_manual("court\nclassification",values=c("limegreen","red")) +
+  scale_size_continuous("",range=c(1,3),guide=FALSE) +
+  scale_color_manual("",values=c("red","limegreen")) +
   scale_x_continuous("Hofer ballot votes",labels=scales::percent,
                      limits=c(0,mymax)) +
   scale_y_continuous("Hofer mail votes",
-                     labels=scales::percent,limits=c(0,mymax)) ->
+                     labels=scales::percent,limits=c(0,mymax)) +
+  theme(legend.position="bottom") ->
   pic1
 pic1
 ```
 
 ```{r}
-png("pic1.png",width=700,height=600)
+pdf(file.path("TeX","pic1.pdf"),width=4,height=4.5)
 pic1
 dev.off()
-system("open pic1.png")
 ```
+
+```{r real_vote_chart}
+#mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
+workdata %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","contaminated","uncontaminated")) %>%
+  ggplot(aes(x=Hofer_u,y=Hofer_m,size=Tot_m,color=incrim)) +
+  geom_point() +
+#  geom_abline(slope=1,intercept=0,linetype="dotted") +
+  scale_size_continuous("",range=c(1,3),guide=FALSE) +
+  scale_color_manual("",values=c("red","limegreen")) +
+  scale_x_continuous("Hofer ballot votes") +
+#                     limits=c(0,mymax)) +
+  scale_y_continuous("Hofer mail votes")+
+#                     limits=c(0,mymax)) +
+  theme(legend.position="bottom") ->
+  pic1v
+pic1v
+```
+
+
+```{r}
+pdf(file.path("TeX","pic1v.pdf"),width=4,height=4.5)
+pic1v
+dev.off()
+```
+
 
 ### German labels, Villach marked
 
@@ -95,7 +122,8 @@ workdata %>%
   geom_point(aes(x=Hofer_ant_u,y=Hofer_ant_m),data=villachdf,size=5,shape="O",inherit.aes=FALSE) +
 
   scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
-  scale_color_manual("VfGH\nKlassifikation",values=c("limegreen","red")) +
+  scale_color_manual("",values=c("limegreen","red"),
+                     labels=c("beanstandet","nicht\nbeanstandet")) +
   scale_x_continuous("Hofer Urnenwahl",labels=scales::percent,
                      limits=c(0,mymax)) +
   scale_y_continuous("Hofer Wahlkarten",
@@ -119,31 +147,55 @@ system("open pic1d.pdf")
 mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
 
 workdata %>%
-  mutate(incrim=ifelse(incrim11=="beanst.","contaminated","clean")) %>%
-  mutate(incrim=factor(incrim,levels=c("clean","dubious","contaminated"))) %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","contaminated","uncontaminated")) %>%
+#  mutate(incrim=factor(incrim,levels=c("contaminted","uncontaminated"))) %>%
   mutate(manipval=ifelse(incrim11=="beanst.",shiftneeded*Tot_m/tot11m,0)) %>%
   mutate(hh=(Hofer_m+manipval)/Tot_m) %>%
   ggplot(aes(x=Hofer_ant_u,y=hh,
              size=Tot_m,color=incrim)) +
   geom_point() +
   geom_abline(slope=1,intercept=0,linetype="dotted") +
-  scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,4),guide=FALSE) +
-  scale_color_manual("court\nclassification",values=c("limegreen","red")) +
+  scale_size_continuous("",range=c(1,4),guide=FALSE) +
+  scale_color_manual("",values=c("red","limegreen")) +
   scale_x_continuous("Hofer ballot votes",labels=scales::percent,
                      limits=c(0,mymax)) +
   scale_y_continuous("Hofer mail votes",
-                     labels=scales::percent,limits=c(0,mymax)) ->
+                     labels=scales::percent,limits=c(0,mymax)) +
+    theme(legend.position="bottom") ->
   pic11
 pic11
 ```
 
 
-
 ```{r}
-png("pic11.png",width=700,height=600)
+pdf(file.path("TeX","pic11.pdf"),width=4,height=4.5)
 pic11
 dev.off()
-system("open pic11.png")
+```
+
+```{r shifted_chart_vores}
+#mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
+
+workdata %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","contaminated","uncontaminated")) %>%
+#  mutate(incrim=factor(incrim,levels=c("contaminted","uncontaminated"))) %>%
+  mutate(manipval=ifelse(incrim11=="beanst.",shiftneeded*Tot_m/tot11m,0)) %>%
+  mutate(hh=(Hofer_m+manipval)) %>%
+  ggplot(aes(x=Hofer_u,y=hh,
+             size=Tot_m,color=incrim)) +
+  geom_point() +
+#  geom_abline(slope=1,intercept=0,linetype="dotted") +
+  scale_size_continuous("",range=c(1,4),guide=FALSE) +
+  scale_color_manual("",values=c("red","limegreen")) +
+  scale_x_continuous("Hofer ballot votes")
+#,labels=scales::percent,
+#                     limits=c(0,mymax)) +
+  scale_y_continuous("Hofer mail votes")
+#,
+#                     labels=scales::percent,limits=c(0,mymax)) +
+    theme(legend.position="bottom") ->
+  pic11v
+pic11v
 ```
 
 ### Modifications in 11 districts, German
@@ -161,9 +213,9 @@ workdata %>%
   geom_point() +
   geom_abline(slope=1,intercept=0,linetype="dotted") +
   
-  
   scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
-  scale_color_manual("VfGH\nKlassifikation",values=c("limegreen","red")) +
+  scale_color_manual("",values=c("limegreen","red"),
+                     labels=c("beanstandet","nicht\nbeanstandet")) +
   scale_x_continuous("Hofer Urnenwahl",labels=scales::percent,
                      limits=c(0,mymax)) +
   scale_y_continuous("Hofer Wahlkarten",

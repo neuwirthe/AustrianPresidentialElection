@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE, comment="")
 
 ## Load packages
 
-```{r}
+```{r packages}
 library(stringr)
 library(ggplot2)
 library(dplyr)
@@ -20,11 +20,11 @@ library(magrittr)
 ```
 ## Get data and compute values needed
 
-```{r}
+```{r load_data}
 load(file=file.path("Rdata","workdata.RData"))
 ```
 
-```{r}
+```{r compute_percentages}
 workdata %<>%
   mutate(Hofer_ant_u=Hofer_u/Tot_u,
          Hofer_ant_m=Hofer_m/Tot_m) 
@@ -32,14 +32,14 @@ workdata %<>%
 ```
 
 
-```{r}
+```{r total_results}
 workdata %>% select(Hofer_u,Hofer_m,Tot_u,Tot_m) %>%
   colSums() -> toterg
 shiftneeded <- ceiling((toterg[3]+toterg[4])/2-(toterg[1]+toterg[2]))
 
 ```
 
-```{r}
+```{r separate_results}
 workdata %>%
   select(incrim11,Tot_m,Hofer_m,Tot_u,Hofer_u) %>%
    group_by(incrim11) %>%
@@ -56,7 +56,7 @@ hoferneeds11 <- (hofer11m + shiftneeded)
 
 ### Without modifications
 
-```{r}
+```{r real_chart}
 mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
 workdata %>%
   mutate(incrim=ifelse(incrim11=="beanst.","contaminated","clean")) %>%
@@ -80,11 +80,42 @@ dev.off()
 system("open pic1.png")
 ```
 
+### German labels, Villach marked
+
+```{r real_chart_german}
+villachdf <- workdata %>% 
+  filter(GKZ=="G20200")
+
+mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
+workdata %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","unsauber","sauber")) %>%
+  ggplot(aes(x=Hofer_ant_u,y=Hofer_ant_m,size=Tot_m,color=incrim)) +
+  geom_point() +
+  geom_abline(slope=1,intercept=0,linetype="dotted") +
+  geom_point(aes(x=Hofer_ant_u,y=Hofer_ant_m),data=villachdf,size=5,shape="O",inherit.aes=FALSE) +
+
+  scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
+  scale_color_manual("VfGH\nKlassifikation",values=c("limegreen","red")) +
+  scale_x_continuous("Hofer Urnenwahl",labels=scales::percent,
+                     limits=c(0,mymax)) +
+  scale_y_continuous("Hofer Wahlkarten",
+                     labels=scales::percent,limits=c(0,mymax)) ->
+  pic1d
+pic1d
+```
+
+
+```{r}
+pdf("pic1d.pdf",width=6,height=4.5)
+pic1d
+dev.off()
+system("open pic1d.pdf")
+```
 
 ### Modifications in 11 districts
 
 
-```{r}
+```{r shifted_chart}
 mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
 
 workdata %>%
@@ -115,12 +146,48 @@ dev.off()
 system("open pic11.png")
 ```
 
+### Modifications in 11 districts, German
+
+
+```{r}
+mymax <- with(workdata,max(Hofer_ant_m,Hofer_ant_u)+0.075)
+
+workdata %>%
+  mutate(incrim=ifelse(incrim11=="beanst.","unsauber","sauber")) %>%
+  mutate(manipval=ifelse(incrim11=="beanst.",shiftneeded*Tot_m/tot11m,0)) %>%
+  mutate(hh=(Hofer_m+manipval)/Tot_m) %>%
+  ggplot(aes(x=Hofer_ant_u,y=hh,
+             size=Tot_m,color=incrim)) +
+  geom_point() +
+  geom_abline(slope=1,intercept=0,linetype="dotted") +
+  
+  
+  scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
+  scale_color_manual("VfGH\nKlassifikation",values=c("limegreen","red")) +
+  scale_x_continuous("Hofer Urnenwahl",labels=scales::percent,
+                     limits=c(0,mymax)) +
+  scale_y_continuous("Hofer Wahlkarten",
+                     labels=scales::percent,limits=c(0,mymax)) ->
+  pic11d
+pic11d
+```
+
+
+```{r}
+pdf("pic11d.pdf",width=6,height=4.5)
+pic11d
+dev.off()
+system("open pic11d.pdf")
+```
+
+
+
 
 ## Computing probabilities for changing election outcome in different scenarios
 
 ### Linear model with 11 districts removed
 
-```{r}
+```{r linear_model}
 workdata %>% filter(!(incrim11 == "beanst.")) %>%
   ntbt_lm(Hofer_m ~ Hofer_u - 1,weights=1/Tot_m) ->
   model11
@@ -128,7 +195,7 @@ workdata %>% filter(!(incrim11 == "beanst.")) %>%
 
 ### Data frame for prediction sum of 11 districts
 
-```{r}
+```{r predictdf}
 preddf11 <- data.frame(Hofer_u=hofer11u,Tot_m=tot11m)  
 ```
 
@@ -138,12 +205,14 @@ preddf11 <- data.frame(Hofer_u=hofer11u,Tot_m=tot11m)
 Our problem is the other way round, we compute the probability od
 the prediction exceeding a given target value.
 
-To do this, we compute a prediction interval for a given confidence level,
-extract the value by which the t-distribution for the prediction has been rescaled,
-and use this scale value to compute the probability we are looking for. 
+To do this, we compute a prediction interval for 95% level using
+the classical prediction estimator for linear models build into R
+(which uses a rescaled t-disribution),
+extract the value by which the t-distribution for this prediction has been rescaled,
+and use this scale value to compute the probability for a given prediction interval width. 
 
 
-```{r}
+```{r prob_function}
 find_prob_pred_geq <- function(model,preddf,targetval){
   pred <- predict.lm(model,preddf,interval="prediction",weights=~1/Tot_m,level=0.95)
   predscale <- (pred[1]-pred[2])/qt(0.975,df.residual(model))
@@ -156,16 +225,16 @@ find_prob_pred_geq <- function(model,preddf,targetval){
 
 ## Probability for sum of 11 districts changing election outcome, model without 11 districts
 
-```{r}
+```{r prob_value}
 myprob <- find_prob_pred_geq(model11,preddf11,hoferneeds11)  
 myprob %>% cat()
 ```
 
-```{r}
+```{r print_helper}
 printfixed <- function(x)sprintf("%.0f",x)
 ```
 
-We can check that the the proabbility really gives the ratget value as limit
+We can check that the the probability really gives the target value as limit
 of the confidence interval.
 
 Hofer has `r printfixed(hofer11m)` votes in the contaminated districts.
@@ -174,7 +243,7 @@ He needs `r printfixed(shiftneeded)` more mail votes there, making for a total o
 
 Let us check the corresponding prediction confidence interval with probability `r sprintf("%.12f",1-2*myprob)`
 
-```{r}
+```{r final check}
 predict(model11,preddf11,interval="prediction",weights=~1/Tot_m, level=1-2*myprob)
 ```
 

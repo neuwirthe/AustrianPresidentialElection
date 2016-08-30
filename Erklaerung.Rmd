@@ -1,0 +1,50 @@
+---
+title: "Erklärung Lineares Modell"
+author: "Erich Neuwirth"
+date: "30 August 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Lineares Modell in Matrixschreibweise
+
+$$y=X\beta+\epsilon$$
+
+Kovarianzmatrix des Vektors $\epsilon$ ist $\sigma^2 W$.
+
+Dann ist der Schätzer 
+$$\hat{\beta}=(X'W^{-1}X)^{-1}X'W^{-1}y$$
+
+Gegeben $x_o$ ($x$ observed) mit bekannter Varianz $\sigma^2 w_o$ für $y_o$ wollen wir
+ein Konfidenzintervall für $y_o=\hat{\beta}x_o$.
+
+$\textit{covar}(\hat{\beta}) = \sigma^2(X'W^{-1}X)^{-1}$
+
+$X$ ist die Nx1 Matrix $v_{b,n}$
+
+$W$ ist die Diagonalmatrix $\textit{diag}(m_n)$, daher
+
+$$X'W^{-1}X = \sum_{n=1}^{N}v_{b,n}\frac{1}{m_n}v_{b,n}=\sum_{n=1}^{N}\frac{v_{b,n}^2}{m_n} $$
+
+und daher
+
+$$(X'W^{-1}X)^{-1} = \frac{1}{\sum_{n=1}^{N}\frac{v_{b,n}^2}{m_n}}$$
+
+
+daher (weil $X$ nur eine Spalte hat, und der Vektor $\hat{\beta}$ der Skalar $\hat{k}$ ist
+
+$$\textit{var}(\hat{k})=\frac{\sigma^2}{\sum_{n=1}^{N}\frac{v_{b,n}^2}{m_n}}$$ und
+
+$$\textit{var}(v_b\hat{k})=\frac{v_b^2\sigma^2} {\sum_{n=1}^{N}\frac{v_{b,n}^2}{m_n}}$$ und
+
+
+
+$$\textit{var}(y_o)=\textit{var}(x_o\hat{\beta}+\epsilon_o)=\textit{var}(\hat{k} v_b)+\textit{var}(\epsilon_o) = $$
+
+$$ v_b^2\textit{var}(\hat{k})+\textit{var}(\epsilon_o)=\frac{v_b^2\sigma^2}{\sum_{n=1}^{N}\frac{v_{b,n}^2}{m_n}} + \sigma^2 m = \sigma^2\left(\frac{v_b^2}{\sum_{n=1}^{N}\frac{v_{b,n}^2}{m_n}} + m\right)$$
+
+
+

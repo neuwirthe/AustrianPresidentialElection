@@ -98,18 +98,19 @@ workdata %>%
 
   scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
   scale_color_manual("",values=c("limegreen","red"),
-                     labels=c("beanstandet","nicht\nbeanstandet")) +
+                     labels=c("nicht\nbeanstandet","beanstandet")) +
   scale_x_continuous("Hofer Urnenwahl",labels=scales::percent,
                      limits=c(0,mymax)) +
   scale_y_continuous("Hofer Wahlkarten",
-                     labels=scales::percent,limits=c(0,mymax)) ->
+                     labels=scales::percent,limits=c(0,mymax)) +
+  theme(legend.position="bottom") ->
   pic1d
 pic1d
 ```
 
 
 ```{r}
-pdf("pic1d.pdf",width=6,height=4.5)
+pdf("pic1d.pdf",width=4,height=4.5)
 pic1d
 dev.off()
 system("open pic1d.pdf")
@@ -165,18 +166,19 @@ workdata %>%
   
   scale_size_continuous("Wahlkarten-\nstimmen",range=c(1,3),guide=FALSE) +
   scale_color_manual("",values=c("limegreen","red"),
-                     labels=c("beanstandet","nicht\nbeanstandet")) +
+                     labels=c("nicht\nbeanstandet","beanstandet")) +
   scale_x_continuous("Hofer Urnenwahl",labels=scales::percent,
                      limits=c(0,mymax)) +
   scale_y_continuous("Hofer Wahlkarten",
-                     labels=scales::percent,limits=c(0,mymax)) ->
+                     labels=scales::percent,limits=c(0,mymax)) +
+    theme(legend.position="bottom") ->
   pic11d
 pic11d
 ```
 
 
 ```{r}
-pdf("pic11d.pdf",width=6,height=4.5)
+pdf("pic11d.pdf",width=4,height=4.5)
 pic11d
 dev.off()
 system("open pic11d.pdf")
@@ -241,7 +243,7 @@ printfixed <- function(x)sprintf("%.0f",x)
 We can check that the the probability really gives the target value as limit
 of the confidence interval.
 
-Hofer lost by `r hofer_behind`, and he has `r printfixed(hofer11m)` votes in the contaminated districts.
+Hofer lost by `r printfixed(hofer_behind)`, and he has `r printfixed(hofer11m)` votes in the contaminated districts.
 So he needs `r printfixed(shiftneeded)` more mail votes there, making for a total of
 `r printfixed(hoferneeds11)` mail votes in the contaminated districts.
 

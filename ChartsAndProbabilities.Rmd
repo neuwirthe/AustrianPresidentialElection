@@ -21,7 +21,7 @@ library(magrittr)
 ## Get data and compute values needed
 
 ```{r load_data}
-load(file=file.path("Rdata","workdata.RData"))
+load(file=file.path("RData","workdata.RData"))
 ```
 
 ```{r compute_percentages}
